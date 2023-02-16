@@ -31,15 +31,15 @@ async function fetchData() {
     productos = data;
     console.log(productos);
 
-    crearHTML(productos)
+    crearHTML(productos);
 
     document.querySelectorAll(".agregarProd").forEach(el => {
-        el.addEventListener("click", e => {
-          const id = e.target.getAttribute("id");
-          añadirProd(id, productos)
-          guardarCarrito(carrito)
-        });
-      });
+        el.addEventListener('click', (e) => {
+            const id = e.target.getAttribute("id");
+            prodAlert(id, productos)
+        })
+    })
+    
 }
 
 function filtrarProductos(filtro){
@@ -77,16 +77,21 @@ function crearHTML (arr) {
 
 //Agregar productos al carrito
 
-function añadirProd(id, data){
+function añadirProd(id, arr, cant){
     const existeProd = carrito.some((producto) => producto.id === id);
 
     const sumarProd = carrito.map((prod) => {
-        prod.id === id ? prod.cant++ : true;
+        prod.id === id ? parseFloat(prod.cant += cant) : true;
     })
 
-    const prod = data.find((prod) => prod.id === id);
+    const prod = arr.find((prod) => prod.id === id);
 
-    existeProd ? sumarProd : carrito.push(prod);
+    const nuevoProd = () => {
+        prod.cant = cant;
+        carrito.push(prod)
+    }
+
+    existeProd ? sumarProd : nuevoProd();
     guardarCarrito(carrito);
     console.log(carrito);
     
@@ -141,20 +146,136 @@ function crearResumen (array) {
     document.querySelectorAll(".eliminarProd").forEach((el) => {
         el.addEventListener('click', (e) => {
             const idProd = e.target.getAttribute("id")
-            eliminarProd(idProd)
-            guardarCarrito(carrito)
-            crearResumen(carrito)
+
+            Swal.fire({
+                title: '¿Desea quitar este producto del carrito?',
+                text: "¡No se puede revertir la acción!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '¡Si, quitar producto!'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                          toast.addEventListener('mouseenter', Swal.stopTimer)
+                          toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                      })
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Producto eliminado',
+                    })
+                    eliminarProd(idProd),
+                    guardarCarrito(carrito),
+                    crearResumen(carrito)
+                }
         })
     })
+    },
 
 
     document.querySelector("#limpiarCarrito").addEventListener('click', () => {
-        carrito.length = [];
-        guardarCarrito(carrito)
-        crearResumen(carrito);
-    })
+        Swal.fire({
+            title: '¿Seguro que quiere vaciar el carrito?',
+            text: "¡No se puede revertir la acción!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '¡Si, vaciar carrito!'
+          }).then((result) => {
+            if (result.isConfirmed && carrito.length != 0) {
+              Swal.fire(
+                '¡Realizado!',
+                'Se vació el carrito',
+                'success',
+                carrito.length = [],
+                guardarCarrito(carrito),
+                crearResumen(carrito)
+              )
+            } else if (result.isConfirmed && carrito.length == 0){
+                Swal.fire(
+                '¡Error!',
+                'El carrito está vacio',
+                'error'
+            )}
+          })
 
-    carrito.length == 0 ? contenedor.innerHTML = '<h1 class="text-center text-secondary display-1">¡El carrito está vacio!</h1>' : true;
+        
+    }),
+
+    carrito.length == 0 ? contenedor.innerHTML = '<h1 class="text-center text-secondary display-1">¡El carrito está vacio!</h1>' : true
+    )}
+
+//Crear sweet alert de compra
+
+function prodAlert(el, arr){
+
+    for (const prod of arr) {
+        const {nombre, precio, img, id} = prod;
+
+        while (el === id) {
+            Swal.fire({
+            html: `
+            <h1>${nombre.toUpperCase()}</h1>
+            <img src="./img/${img}" alt="${nombre}" class="imgAlert">
+            <div class="card-body">
+                <p class="card-text">Precio por unidad: $ARG ${precio}</p>
+                <div class="d-flex justify-content-center">
+                    <input class="m-2 form-control" type="number" value="1" min="1" id="prodCant">
+                </div>
+            </div>
+            `,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: "Comprar",
+            cancelButtonText: "Cancelar",
+        })
+
+        .then(res => {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer)
+                  toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+              })
+
+            prodCant = document.querySelector("#prodCant")
+
+            res.isConfirmed ?
+            Toast.fire({
+                icon: 'success',
+                title: 'Compra Realizada',
+                text: 'El producto se está agregando al carrito'
+              })
+            && añadirProd(id, productos, parseFloat(prodCant.value))
+            && guardarCarrito(carrito):
+
+            res.isDenied ?
+            
+            Swal.fire('Compra cancelada', '', 'error'):true;
+        })
+
+        console.log(prodCant.value);
+
+        break;
+        }
+        
+
+    }
 }
 
 //Eventos
@@ -168,7 +289,6 @@ index.addEventListener('click', () => {
     window.location.href = ("./index.html");
 })
 
-
 miCarrito.onclick = () => {
     crearResumen(carrito);
 }
@@ -177,3 +297,12 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchData()
 })
 
+
+
+/*document.querySelectorAll(".agregarProd").forEach(el => {
+    el.addEventListener("click", e => {
+      const id = e.target.getAttribute("id");
+      añadirProd(id, productos)
+      guardarCarrito(carrito)
+    });
+  });*/

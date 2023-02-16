@@ -35,6 +35,14 @@
     background-image: radial-gradient(rgba(255, 255, 255, 0.945), rgba(211, 208, 208, 0.904));
 }
 
+.imgAlert  {
+    height: 30vh;
+}
+
+#prodCant{
+    width: 30%;
+}
+
 
 
 
