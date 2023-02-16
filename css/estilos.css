@@ -1,0 +1,43 @@
+.link-decoration{
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.icon{
+    height: 4vh;
+}
+
+.card-img-auto{
+    height: 35vh;
+}
+
+.producto{
+    margin: 1rem;
+}
+
+#catalogo{
+    margin: 2rem;
+    display: flex;
+    align-items: center;
+    background-image: linear-gradient(rgba(247, 247, 247, 0.829), rgba(211, 211, 211, 0.541));
+}
+
+#login, #registro{
+    width: 33%;
+    padding: 3rem;
+    margin-top: 3rem;
+    border: 2px solid whitesmoke;
+    border-radius: 1rem;
+    display: flex;
+    flex-flow: wrap column;
+    align-content:space-evenly;
+    align-items: center;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.945), rgba(211, 208, 208, 0.904));
+}
+
+
+
+
+
+
+
